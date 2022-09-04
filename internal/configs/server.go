@@ -16,6 +16,8 @@ type ServerSettings struct {
 }
 
 func LoadServerSettings(path string) (ss *ServerSettings, err error) {
+	ss = new(ServerSettings)
+
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err

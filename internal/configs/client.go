@@ -12,7 +12,9 @@ type ClientSettings struct {
 	PrivKeyPath   string `json:"privKeyPath"`
 }
 
-func LoadClientSettings(path string) (ss *ClientSettings, err error) {
+func LoadClientSettings(path string) (cs *ClientSettings, err error) {
+	cs = new(ClientSettings)
+
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -20,7 +22,7 @@ func LoadClientSettings(path string) (ss *ClientSettings, err error) {
 
 	b := bytes.NewBuffer(raw)
 	d := json.NewDecoder(b)
-	if err = d.Decode(ss); err != nil {
+	if err = d.Decode(cs); err != nil {
 		return nil, err
 	}
 
