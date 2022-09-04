@@ -21,19 +21,19 @@ func init() {
 func main() {
 	flag.Parse()
 
-	c, err := configs.LoadServerSettings(configPathFlag)
+	cfg, err := configs.LoadServerSettings(configPathFlag)
 	if err != nil {
 		log.Fatalf("could not parse the config file (%s)", err)
 	}
 
-	store.SetDbPath(c.DbPath)
+	store.SetDbPath(cfg.DbPath)
 
-	ca, err := keys.LoadKeyPair(c.CaPubicPath, c.CaPrivatePath)
+	ca, err := keys.LoadKeyPair(cfg.CaPubicPath, cfg.CaPrivatePath)
 	if err != nil {
 		log.Fatalf("could not parse the ca keys (%s)", err)
 	}
 
-	s := com.NewServer(ca, c.Address)
+	s := com.NewServer(ca, cfg.Address)
 
 	if err = s.Listen(); err != nil {
 		log.Fatalf("error while running ssh server (%s)", err)

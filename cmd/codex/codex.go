@@ -5,31 +5,33 @@ import (
 	"log"
 
 	"github.com/antoi-ne/codex/internal/com"
+	"github.com/antoi-ne/codex/internal/configs"
 	"github.com/antoi-ne/codex/internal/keys"
 )
 
 var (
-	addressFlag  string
-	PubPathFlag  string
-	PrivPathFlag string
+	configPathFlag string
 )
 
 func init() {
-	flag.StringVar(&addressFlag, "address", "127.0.0.1:2222", "Server address in the format ip:port")
-	flag.StringVar(&PubPathFlag, "pubkey", "./user.pub", "Path to the user's public key")
-	flag.StringVar(&PrivPathFlag, "privkey", "./user.key", "Path to the user's private key")
+	flag.StringVar(&configPathFlag, "config", "/etc/codexd.json", "Config file path")
 }
 
 func main() {
 	flag.Parse()
 
-	kp, err := keys.LoadKeyPair("./user.pub", "./user.key")
+	cfg, err := configs.LoadClientSettings(configPathFlag)
+	if err != nil {
+		log.Fatalf("could not parse the config file (%s)", err)
+	}
+
+	kp, err := keys.LoadKeyPair(cfg.PubKeyPath, cfg.PrivKeyPath)
 	if err != nil {
 		log.Fatalf("could not parse the keys (%s)", err)
 
 	}
 
-	c := com.NewClient(kp, addressFlag)
+	c := com.NewClient(kp, cfg.ServerAddress)
 
 	if err = c.Connect(); err != nil {
 		log.Fatalf("could not connect to the server (%s)", err)
