@@ -2,6 +2,7 @@ package keys
 
 import (
 	"io/ioutil"
+	"os"
 
 	"golang.org/x/crypto/ssh"
 )
@@ -15,7 +16,7 @@ type KeyPair struct {
 func LoadKeyPair(pubPath string, privPath string) (kp *KeyPair, err error) {
 	kp = new(KeyPair)
 
-	f, err := ioutil.ReadFile(pubPath)
+	f, err := os.ReadFile(pubPath)
 	if err != nil {
 		return nil, err
 	}

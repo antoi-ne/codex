@@ -2,9 +2,11 @@ package store
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/gob"
 	"time"
 
+	"github.com/antoi-ne/codex/internal/keys"
 	"go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh"
 )
@@ -89,4 +91,37 @@ func (u *User) Save() (err error) {
 	}
 
 	return
+}
+
+func (u *User) MakeCertificate(ca keys.KeyPair) (c *ssh.Certificate, err error) {
+	pk, _, _, _, err := ssh.ParseAuthorizedKey(u.PubKey)
+	if err != nil {
+		return nil, err
+	}
+	c = &ssh.Certificate{
+		Key:             pk,
+		Serial:          uint64(u.Serial) + 1,
+		CertType:        ssh.UserCert,
+		KeyId:           u.Name,
+		ValidPrincipals: u.Principals,
+		ValidAfter:      uint64(time.Now().Unix()),
+		ValidBefore:     minUint64(uint64(u.Expiration.Unix()), uint64(time.Now().Add(time.Hour*24).Unix())),
+	}
+
+	if c.SignCert(rand.Reader, ca.Priv); err != nil {
+		return nil, err
+	}
+
+	u.Serial += 1
+
+	u.Save()
+
+	return
+}
+
+func minUint64(n1 uint64, n2 uint64) uint64 {
+	if n1 < n2 {
+		return n1
+	}
+	return n2
 }
