@@ -10,7 +10,7 @@ A common solution is to use OpenSSH certificates, which let you authorize users 
 
 The goal of this project is to simplify the management of users while automating the distribution of certificates.
 
-*If you want to know more about OpenSSH certificates, i recomend you to start with [this article](https://engineering.fb.com/2016/09/12/security/scalable-and-secure-access-with-ssh/) by Meta engineers.*
+*If you want to know more about OpenSSH certificates, I recomend starting with [this article](https://engineering.fb.com/2016/09/12/security/scalable-and-secure-access-with-ssh/) by Meta engineers.*
 
 ## Architecture
 
