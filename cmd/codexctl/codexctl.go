@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
+	"time"
 
 	"github.com/antoi-ne/codex/internal/configs"
 	"github.com/antoi-ne/codex/internal/store"
@@ -25,7 +27,21 @@ func main() {
 		log.Fatalf("could not parse the config file (%s)", err)
 	}
 
-	store.SetDbPath(cfg.DbPath)
+	store.InitDB(cfg.DbPath)
 
-	fmt.Println("not implemented")
+	key, err := os.ReadFile("./user.pub")
+	if err != nil {
+		log.Fatalf("could not open the public key (%s)", err)
+	}
+
+	u, err := store.NewUser(key, time.Now().Add(time.Hour*24*7))
+	if err != nil {
+		log.Fatalf("could not create the user (%s)", err)
+	}
+
+	if err = u.Save(); err != nil {
+		log.Fatalf("could not save the user in the database (%s)", err)
+	}
+
+	fmt.Println("user created successfully")
 }
