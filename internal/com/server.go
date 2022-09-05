@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/antoi-ne/codex/internal/keys"
 	"github.com/antoi-ne/codex/internal/store"
@@ -16,6 +17,8 @@ type Server struct {
 	sshConfig *ssh.ServerConfig
 	address   string
 	ca        *keys.KeyPair
+	users     map[string]*store.User
+	mu        sync.RWMutex
 }
 
 var bannerMsg = strings.Replace(`
@@ -38,20 +41,7 @@ func NewServer(ca *keys.KeyPair, address string) (s *Server) {
 	s = new(Server)
 
 	s.sshConfig = &ssh.ServerConfig{
-		PublicKeyCallback: func(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
-			u, err := store.GetUser(key.Marshal())
-			if err != nil {
-				return nil, err
-			}
-			if u == nil {
-				return nil, errors.New("user not found")
-			}
-			return &ssh.Permissions{
-				Extensions: map[string]string{
-					"user-pubkey": string(u.PubKey),
-				},
-			}, nil
-		},
+		PublicKeyCallback: s.publicKeyCallback,
 		BannerCallback: func(conn ssh.ConnMetadata) string {
 			return bannerMsg
 		},
@@ -63,7 +53,26 @@ func NewServer(ca *keys.KeyPair, address string) (s *Server) {
 
 	s.sshConfig.AddHostKey(ca.Priv)
 
+	s.users = make(map[string]*store.User)
+
 	return
+}
+
+func (s *Server) publicKeyCallback(conn ssh.ConnMetadata, key ssh.PublicKey) (*ssh.Permissions, error) {
+	u, err := store.GetUser(key.Marshal())
+	if err != nil {
+		return nil, err
+	}
+
+	if u == nil {
+		return nil, errors.New("user not found")
+	}
+
+	s.mu.Lock()
+	s.users[string(conn.SessionID())] = u
+	s.mu.Unlock()
+
+	return &ssh.Permissions{}, nil
 }
 
 func (s *Server) Listen() (err error) {
@@ -79,15 +88,20 @@ func (s *Server) Listen() (err error) {
 			continue
 		}
 
-		go s.HandleConn(c)
+		go s.handleConn(c)
 	}
 }
 
-func (s *Server) HandleConn(nConn net.Conn) {
+func (s *Server) handleConn(nConn net.Conn) {
 	conn, chans, reqs, err := ssh.NewServerConn(nConn, s.sshConfig)
 	if err != nil {
 		return
 	}
+
+	defer func() {
+		delete(s.users, string(conn.SessionID()))
+	}()
+
 	go ssh.DiscardRequests(reqs)
 
 	for nChan := range chans {
@@ -114,12 +128,12 @@ func (s *Server) HandleConn(nConn net.Conn) {
 				}
 			}(rqs)
 
-			u, err := store.GetUser([]byte(conn.Permissions.Extensions["user-pubkey"]))
-			if err != nil {
-				return
-			}
+			s.mu.RLock()
+			u := s.users[string(conn.SessionID())]
+			s.mu.RUnlock()
+
 			if u == nil {
-				panic("user sent from public key callback not found")
+				return
 			}
 
 			c, err := u.MakeCertificate(s.ca)
