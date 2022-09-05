@@ -14,7 +14,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&configPathFlag, "config", "/etc/codexd.json", "Config file path")
+	flag.StringVar(&configPathFlag, "config", "~/.codex.json", "Config file path")
 }
 
 func main() {
@@ -28,7 +28,6 @@ func main() {
 	kp, err := keys.LoadKeyPair(cfg.PubKeyPath, cfg.PrivKeyPath)
 	if err != nil {
 		log.Fatalf("could not parse the keys (%s)", err)
-
 	}
 
 	c := com.NewClient(kp, cfg.ServerAddress)
