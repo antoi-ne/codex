@@ -2,6 +2,8 @@ package com
 
 import (
 	"errors"
+	"html/template"
+	"log"
 	"net"
 	"strings"
 
@@ -13,6 +15,7 @@ import (
 type Server struct {
 	sshConfig *ssh.ServerConfig
 	address   string
+	ca        *keys.KeyPair
 }
 
 var bannerMsg = strings.Replace(`
@@ -23,7 +26,15 @@ var bannerMsg = strings.Replace(`
 
 `, "\n", "\n\r", -1)
 
-func NewServer(kp *keys.KeyPair, address string) (s *Server) {
+var successTmpl = template.Must(template.New("successTmpl").Parse(strings.Replace(`
+Hello {{ .User }},
+Here is your new certificate:
+
+{{ .Cert }}
+
+`, "\n", "\n\r", -1)))
+
+func NewServer(ca *keys.KeyPair, address string) (s *Server) {
 	s = new(Server)
 
 	s.sshConfig = &ssh.ServerConfig{
@@ -35,14 +46,22 @@ func NewServer(kp *keys.KeyPair, address string) (s *Server) {
 			if u == nil {
 				return nil, errors.New("user not found")
 			}
-			return &ssh.Permissions{}, nil
+			return &ssh.Permissions{
+				Extensions: map[string]string{
+					"user-pubkey": string(u.PubKey),
+				},
+			}, nil
 		},
 		BannerCallback: func(conn ssh.ConnMetadata) string {
 			return bannerMsg
 		},
 	}
 
-	s.sshConfig.AddHostKey(kp.Priv)
+	s.address = address
+
+	s.ca = ca
+
+	s.sshConfig.AddHostKey(ca.Priv)
 
 	return
 }
@@ -60,32 +79,67 @@ func (s *Server) Listen() (err error) {
 			continue
 		}
 
-		sConn, chans, reqs, err := ssh.NewServerConn(c, s.sshConfig)
-		if err != nil {
-			continue
-		}
-
-		go ssh.DiscardRequests(reqs)
-		go handleServerConn(sConn, chans)
+		go s.HandleConn(c)
 	}
 }
 
-func handleServerConn(sConn *ssh.ServerConn, chans <-chan ssh.NewChannel) {
-	for newChan := range chans {
+func (s *Server) HandleConn(nConn net.Conn) {
+	conn, chans, reqs, err := ssh.NewServerConn(nConn, s.sshConfig)
+	if err != nil {
+		return
+	}
+	go ssh.DiscardRequests(reqs)
 
-		switch newChan.ChannelType() {
+	for nChan := range chans {
+		switch nChan.ChannelType() {
 		case "session":
-			newChan.Reject(ssh.Prohibited, "codex does not provide shell access")
-		case "codex-init":
-			ch, reqs, err := newChan.Accept()
+			ch, rqs, err := nChan.Accept()
 			if err != nil {
-				continue
+				return
 			}
-			go ssh.DiscardRequests(reqs)
-			ch.Write([]byte("hello world!"))
-			ch.Close()
+			defer ch.Close()
+
+			go func(in <-chan *ssh.Request) {
+				ok := false
+				for req := range in {
+					switch req.Type {
+					case "shell":
+						fallthrough
+					case "pty-req":
+						ok = true
+					}
+					if req.WantReply {
+						req.Reply(ok, nil)
+					}
+				}
+			}(rqs)
+
+			u, err := store.GetUser([]byte(conn.Permissions.Extensions["user-pubkey"]))
+			if err != nil {
+				return
+			}
+			if u == nil {
+				panic("user sent from public key callback not found")
+			}
+
+			c, err := u.MakeCertificate(s.ca)
+			if err != nil {
+				log.Printf("could not generate certificate (%s)", err)
+				ch.Close()
+				return
+			}
+
+			if err = successTmpl.Execute(ch, struct {
+				User string
+				Cert string
+			}{User: u.Name, Cert: string(ssh.MarshalAuthorizedKey(c))}); err != nil {
+				log.Printf("could not execute template (%s)", err)
+			}
+
+			return
+
 		default:
-			newChan.Reject(ssh.UnknownChannelType, "unknown channel type")
+			nChan.Reject(ssh.UnknownChannelType, "unknown channel type")
 		}
 	}
 }

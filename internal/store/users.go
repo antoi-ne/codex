@@ -37,7 +37,7 @@ func NewUser(key []byte, exp time.Time) (u *User, err error) {
 }
 
 func GetUser(pubkey []byte) (u *User, err error) {
-	db, err := bbolt.Open(dbPath, 0666, nil)
+	db, err := bbolt.Open(dbPath, 0666, &bbolt.Options{ReadOnly: true})
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +47,7 @@ func GetUser(pubkey []byte) (u *User, err error) {
 
 	if err = db.View(func(tx *bbolt.Tx) error {
 		bx := tx.Bucket([]byte("users"))
-		v = bx.Get([]byte(pubkey))
+		v = bx.Get(pubkey)
 		return nil
 	}); err != nil {
 		return nil, err
@@ -84,8 +84,7 @@ func (u *User) Save() (err error) {
 		if err != nil {
 			return err
 		}
-		err = bx.Put([]byte(u.PubKey), b.Bytes())
-		return err
+		return bx.Put(u.PubKey, b.Bytes())
 	}); err != nil {
 		return
 	}
@@ -93,11 +92,12 @@ func (u *User) Save() (err error) {
 	return
 }
 
-func (u *User) MakeCertificate(ca keys.KeyPair) (c *ssh.Certificate, err error) {
-	pk, _, _, _, err := ssh.ParseAuthorizedKey(u.PubKey)
+func (u *User) MakeCertificate(ca *keys.KeyPair) (c *ssh.Certificate, err error) {
+	pk, err := ssh.ParsePublicKey(u.PubKey)
 	if err != nil {
 		return nil, err
 	}
+
 	c = &ssh.Certificate{
 		Key:             pk,
 		Serial:          uint64(u.Serial) + 1,
@@ -105,7 +105,7 @@ func (u *User) MakeCertificate(ca keys.KeyPair) (c *ssh.Certificate, err error) 
 		KeyId:           u.Name,
 		ValidPrincipals: u.Principals,
 		ValidAfter:      uint64(time.Now().Unix()),
-		ValidBefore:     minUint64(uint64(u.Expiration.Unix()), uint64(time.Now().Add(time.Hour*24).Unix())),
+		ValidBefore:     uint64(time.Now().Add(time.Hour * 24).Unix()),
 	}
 
 	if c.SignCert(rand.Reader, ca.Priv); err != nil {
@@ -114,14 +114,16 @@ func (u *User) MakeCertificate(ca keys.KeyPair) (c *ssh.Certificate, err error) 
 
 	u.Serial += 1
 
-	u.Save()
+	if err = u.Save(); err != nil {
+		return nil, err
+	}
 
 	return
 }
 
-func minUint64(n1 uint64, n2 uint64) uint64 {
-	if n1 < n2 {
-		return n1
-	}
-	return n2
-}
+// func minUint64(n1 uint64, n2 uint64) uint64 {
+// 	if n1 < n2 {
+// 		return n1
+// 	}
+// 	return n2
+// }
