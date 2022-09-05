@@ -5,7 +5,7 @@ SSH certificates distribution infrastructure
 
 ## Scope
 
-Managing SSH permissions on multiple servers through the `authorized_keys` can become tedious when you have a large set of users.
+Managing SSH permissions on multiple servers through the `authorized_keys` file can become tedious when you have a large set of users.
 A common solution is to use OpenSSH certificates, which let you authorize users without having to contact the targeted servers. However, manually assigning certificates can become tiresome, especially if you define short expiration times.
 
 The goal of this project is to simplify the management of users while automating the distribution of certificates.
