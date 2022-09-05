@@ -7,6 +7,7 @@ import (
 	"net"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/antoi-ne/codex/internal/keys"
 	"github.com/antoi-ne/codex/internal/store"
@@ -26,7 +27,7 @@ var bannerMsg = strings.Replace(`
  / __)(  _  )(  _ \( ___)( \/ )
 ( (__  )(_)(  )(_) ))__)  )  ( 
  \___)(_____)(____/(____)(_/\_)
-
+                         v0.0.0
 `, "\n", "\n\r", -1)
 
 var successTmpl = template.Must(template.New("successTmpl").Parse(strings.Replace(`
@@ -34,6 +35,10 @@ Hello {{ .User }},
 Here is your new certificate:
 
 {{ .Cert }}
+Certificate details:
+
+    Serial number: {{ .Serial }}
+    Expiration date: {{ .Exp }}
 
 `, "\n", "\n\r", -1)))
 
@@ -144,9 +149,16 @@ func (s *Server) handleConn(nConn net.Conn) {
 			}
 
 			if err = successTmpl.Execute(ch, struct {
-				User string
-				Cert string
-			}{User: u.Name, Cert: string(ssh.MarshalAuthorizedKey(c))}); err != nil {
+				User   string
+				Cert   string
+				Serial uint64
+				Exp    string
+			}{
+				User:   u.Name,
+				Cert:   "\033[35m" + string(ssh.MarshalAuthorizedKey(c)) + "\033[0m",
+				Serial: uint64(u.Serial),
+				Exp:    time.Unix(int64(c.ValidBefore), 0).Format(time.RFC822),
+			}); err != nil {
 				log.Printf("could not execute template (%s)", err)
 			}
 
