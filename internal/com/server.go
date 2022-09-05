@@ -144,7 +144,6 @@ func (s *Server) handleConn(nConn net.Conn) {
 			c, err := u.MakeCertificate(s.ca)
 			if err != nil {
 				log.Printf("could not generate certificate (%s)", err)
-				ch.Close()
 				return
 			}
 
