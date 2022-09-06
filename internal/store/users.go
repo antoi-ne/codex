@@ -6,7 +6,7 @@ import (
 	"encoding/gob"
 	"time"
 
-	"github.com/antoi-ne/codex/internal/keys"
+	"coulon.dev/codex/internal/keys"
 	"go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh"
 )

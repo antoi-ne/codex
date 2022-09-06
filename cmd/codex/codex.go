@@ -4,9 +4,9 @@ import (
 	"flag"
 	"log"
 
-	"github.com/antoi-ne/codex/internal/com"
-	"github.com/antoi-ne/codex/internal/configs"
-	"github.com/antoi-ne/codex/internal/keys"
+	"coulon.dev/codex/internal/com"
+	"coulon.dev/codex/internal/configs"
+	"coulon.dev/codex/internal/keys"
 )
 
 var (

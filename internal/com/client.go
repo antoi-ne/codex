@@ -1,7 +1,7 @@
 package com
 
 import (
-	"github.com/antoi-ne/codex/internal/keys"
+	"coulon.dev/codex/internal/keys"
 	"golang.org/x/crypto/ssh"
 )
 

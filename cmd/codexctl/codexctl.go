@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/antoi-ne/codex/internal/configs"
-	"github.com/antoi-ne/codex/internal/store"
+	"coulon.dev/codex/internal/configs"
+	"coulon.dev/codex/internal/store"
 )
 
 var (

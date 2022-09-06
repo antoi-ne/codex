@@ -1,4 +1,4 @@
-module github.com/antoi-ne/codex
+module coulon.dev/codex
 
 go 1.19
 

@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/antoi-ne/codex/internal/keys"
-	"github.com/antoi-ne/codex/internal/store"
+	"coulon.dev/codex/internal/keys"
+	"coulon.dev/codex/internal/store"
 	"golang.org/x/crypto/ssh"
 )
 
