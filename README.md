@@ -28,11 +28,16 @@ $ ssh codex.example.org -p 3646
  / __)(  _  )(  _ \( ___)( \/ )
 ( (__  )(_)(  )(_) ))__)  )  (
  \___)(_____)(____/(____)(_/\_)
-
+                         v0.0.0
 Hello user,
 Here is your new certificate:
 
 ssh-ed25519-cert-v01@openssh.com [...]
+
+Certificate details:
+
+    Serial number: 42
+    Expiration date: 08 Sep 22 11:43 CEST
 
 Connection to localhost closed.
 ```
