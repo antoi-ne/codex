@@ -49,7 +49,7 @@ func main() {
 		expInput := strings.TrimSpace(prompt("User expiration day (format: YYYY/MM/DD):"))
 		exp, err := time.Parse("2006/01/02", expInput)
 		if err != nil {
-			log.Fatalf("Invalid expiration date (%s)", err)
+			log.Fatalf("invalid expiration date (%s)", err)
 		}
 		u.Expiration = exp
 		principals := prompt("Valid principals (space-separated):")

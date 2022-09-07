@@ -1,10 +1,14 @@
 package store
 
-import "go.etcd.io/bbolt"
+import (
+	"log"
+
+	"go.etcd.io/bbolt"
+)
 
 var dbPath string
 
-func InitDB(path string) (err error) {
+func InitDB(path string) {
 	dbPath = path
 
 	db, err := bbolt.Open(dbPath, 0666, nil)
@@ -13,10 +17,10 @@ func InitDB(path string) (err error) {
 	}
 	defer db.Close()
 
-	err = db.Update(func(tx *bbolt.Tx) error {
+	if err = db.Update(func(tx *bbolt.Tx) error {
 		_, err = tx.CreateBucketIfNotExists([]byte("users"))
 		return err
-	})
-
-	return
+	}); err != nil {
+		log.Fatalf("could not initiate database (%s)", err)
+	}
 }
