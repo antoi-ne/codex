@@ -6,9 +6,9 @@ import (
 	"encoding/gob"
 	"time"
 
-	"coulon.dev/codex/internal/keys"
 	"go.etcd.io/bbolt"
 	"golang.org/x/crypto/ssh"
+	"pkg.coulon.dev/codex/internal/keys"
 )
 
 type User struct {

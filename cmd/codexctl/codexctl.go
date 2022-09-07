@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"coulon.dev/codex/internal/configs"
-	"coulon.dev/codex/internal/store"
+	"pkg.coulon.dev/codex/internal/configs"
+	"pkg.coulon.dev/codex/internal/store"
 )
 
 var (

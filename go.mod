@@ -1,4 +1,4 @@
-module coulon.dev/codex
+module pkg.coulon.dev/codex
 
 go 1.19
 

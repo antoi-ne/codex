@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"coulon.dev/codex/internal/keys"
-	"coulon.dev/codex/internal/store"
 	"golang.org/x/crypto/ssh"
+	"pkg.coulon.dev/codex/internal/keys"
+	"pkg.coulon.dev/codex/internal/store"
 )
 
 type Server struct {

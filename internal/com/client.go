@@ -1,8 +1,8 @@
 package com
 
 import (
-	"coulon.dev/codex/internal/keys"
 	"golang.org/x/crypto/ssh"
+	"pkg.coulon.dev/codex/internal/keys"
 )
 
 type Client struct {

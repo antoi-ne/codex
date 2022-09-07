@@ -4,10 +4,10 @@ import (
 	"flag"
 	"log"
 
-	"coulon.dev/codex/internal/com"
-	"coulon.dev/codex/internal/configs"
-	"coulon.dev/codex/internal/keys"
-	"coulon.dev/codex/internal/store"
+	"pkg.coulon.dev/codex/internal/com"
+	"pkg.coulon.dev/codex/internal/configs"
+	"pkg.coulon.dev/codex/internal/keys"
+	"pkg.coulon.dev/codex/internal/store"
 )
 
 var (
