@@ -30,7 +30,7 @@ func NewUser(key []byte, exp time.Time) (u *User, err error) {
 	u.PubKey = pub.Marshal()
 	u.Name = com
 	u.Serial = 0
-	u.Principals = []string{"root"}
+	u.Principals = []string{}
 	u.Expiration = exp
 
 	return
