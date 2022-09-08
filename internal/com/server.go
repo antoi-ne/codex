@@ -51,13 +51,10 @@ func NewServer(ca *keys.KeyPair, address string) (s *Server) {
 			return bannerMsg
 		},
 	}
-
-	s.address = address
-
-	s.ca = ca
-
 	s.sshConfig.AddHostKey(ca.Priv)
 
+	s.ca = ca
+	s.address = address
 	s.users = make(map[string]*store.User)
 
 	return

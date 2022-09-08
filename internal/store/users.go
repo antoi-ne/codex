@@ -120,10 +120,3 @@ func (u *User) MakeCertificate(ca *keys.KeyPair) (c *ssh.Certificate, err error)
 
 	return
 }
-
-// func minUint64(n1 uint64, n2 uint64) uint64 {
-// 	if n1 < n2 {
-// 		return n1
-// 	}
-// 	return n2
-// }
