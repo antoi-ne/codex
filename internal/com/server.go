@@ -39,6 +39,7 @@ Certificate details:
 
     Serial number: {{ .Serial }}
     Expiration date: {{ .Exp }}
+    Principals: {{ .Principals }}
 
 `, "\n", "\n\r", -1)))
 
@@ -145,15 +146,17 @@ func (s *Server) handleConn(nConn net.Conn) {
 			}
 
 			if err = successTmpl.Execute(ch, struct {
-				User   string
-				Cert   string
-				Serial uint64
-				Exp    string
+				User       string
+				Cert       string
+				Serial     uint64
+				Exp        string
+				Principals []string
 			}{
-				User:   u.Name,
-				Cert:   "\033[35m" + string(ssh.MarshalAuthorizedKey(c)) + "\033[0m",
-				Serial: uint64(u.Serial),
-				Exp:    time.Unix(int64(c.ValidBefore), 0).Format(time.RFC822),
+				User:       u.Name,
+				Cert:       "\033[35m" + string(ssh.MarshalAuthorizedKey(c)) + "\033[0m",
+				Serial:     uint64(u.Serial),
+				Exp:        time.Unix(int64(c.ValidBefore), 0).Format(time.RFC822),
+				Principals: u.Principals,
 			}); err != nil {
 				log.Printf("could not execute template (%s)", err)
 			}
