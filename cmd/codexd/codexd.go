@@ -26,7 +26,9 @@ func main() {
 		log.Fatalf("could not parse the config file (%s)", err)
 	}
 
-	store.InitDB(cfg.DbPath)
+	if err = store.InitDB(cfg.DbPath); err != nil {
+		log.Fatalf("could not initiate the database (%s)", err)
+	}
 
 	ca, err := keys.LoadKeyPair(cfg.CaPubicPath, cfg.CaPrivatePath)
 	if err != nil {
