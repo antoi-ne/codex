@@ -1,5 +1,6 @@
 # `codex`
 [![Go Reference](https://pkg.go.dev/badge/pkg.coulon.dev/codex.svg)](https://pkg.go.dev/pkg.coulon.dev/codex)
+
 SSH certificates distribution infrastructure
 
 **Warning:** codex is still under development
