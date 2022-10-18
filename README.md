@@ -18,7 +18,7 @@ The goal of this project is to simplify the management of users while automating
 
 codex implements a client-server infrastructure where the server stores a list of users and serves certificates to the clients.
 
-User data is stored on disk using [bbolt](https://pkg.go.dev/go.etcd.io/bbolt), an embedded key-value store. User are represented as an SSH public key (their primary key) and the attached informations are their expiration, principals and the serial number of the last delivered certificate. User data can be managed from a command line utility named `codexctl`.
+User data is stored on disk using [bbolt](https://pkg.go.dev/go.etcd.io/bbolt), an embedded key-value store. Users are represented as an SSH public key (their primary key) and the attached informations are their expiration, principals and the serial number of the last delivered certificate. User data can be managed from a command line utility named `codexctl`.
 
 The codex server which is named `codexd` will listen for SSH connections on port `3646` by default. Clients will authenticate through their public key, the server will look for the corresponding user in its database and will return a new and signed OpenSSH certificate.
 
